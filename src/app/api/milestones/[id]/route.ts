@@ -26,6 +26,10 @@ export async function PATCH(
     }
 
     const body = await request.json();
+    const VALID_MILESTONE_STATUSES = ["pending", "in_progress", "done", "approved"] as const;
+    if ("status" in body && !VALID_MILESTONE_STATUSES.includes(body.status)) {
+      return NextResponse.json({ error: "Status milestone tidak valid" }, { status: 400 });
+    }
     const allowed = ["title", "description", "status", "due_date", "sort_order"];
     const updates: Record<string, unknown> = {};
     for (const key of allowed) {

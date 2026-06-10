@@ -78,7 +78,7 @@ alter table public.files enable row level security;
 create table if not exists public.invoices (
   id             uuid primary key default gen_random_uuid(),
   project_id     uuid unique not null references public.projects(id) on delete cascade,
-  invoice_number text not null,
+  invoice_number text unique not null,
   items          jsonb not null default '[]'::jsonb,
   subtotal       numeric(12,2) not null default 0,
   tax_rate       numeric(5,2) not null default 0,

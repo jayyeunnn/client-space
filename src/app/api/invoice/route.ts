@@ -3,8 +3,8 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 function generateInvoiceNumber(): string {
   const year = new Date().getFullYear();
-  const rand = Math.floor(Math.random() * 900) + 100;
-  return `INV-${year}-${rand}`;
+  const suffix = crypto.randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase();
+  return `INV-${year}-${suffix}`;
 }
 
 // POST /api/invoice — buat invoice baru

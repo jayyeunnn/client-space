@@ -52,7 +52,13 @@ export async function PATCH(
     if (description !== undefined) updates.description = description?.trim() || null;
     if (client_name !== undefined) updates.client_name = client_name.trim();
     if (client_email !== undefined) updates.client_email = client_email?.trim() || null;
-    if (status !== undefined) updates.status = status;
+    const VALID_STATUSES = ["active", "completed", "on_hold"] as const;
+    if (status !== undefined) {
+      if (!VALID_STATUSES.includes(status)) {
+        return NextResponse.json({ error: "Status tidak valid" }, { status: 400 });
+      }
+      updates.status = status;
+    }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "Tidak ada data yang diupdate" }, { status: 400 });

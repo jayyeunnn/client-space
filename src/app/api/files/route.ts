@@ -17,6 +17,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "file dan project_id wajib ada" }, { status: 400 });
     }
 
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: "Ukuran file maksimal 50MB" }, { status: 413 });
+    }
+
     // Pastikan project milik user
     const { data: project } = await supabase
       .from("projects")
