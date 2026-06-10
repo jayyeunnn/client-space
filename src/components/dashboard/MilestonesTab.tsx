@@ -88,7 +88,11 @@ export function MilestonesTab({ projectId, initialMilestones, onMilestonesChange
         const updated = await res.json();
         updateMilestones(milestones.map((x) => x.id === m.id ? updated : x));
         toast.success("Status diperbarui");
+      } else {
+        toast.error("Gagal mengubah status. Coba lagi.");
       }
+    } catch {
+      toast.error("Gagal mengubah status. Coba lagi.");
     } finally {
       setUpdatingId(null);
     }
@@ -97,9 +101,12 @@ export function MilestonesTab({ projectId, initialMilestones, onMilestonesChange
   async function handleDelete(id: string) {
     setDeletingId(id);
     try {
-      await fetch(`/api/milestones/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/milestones/${id}`, { method: "DELETE" });
+      if (!res.ok) { toast.error("Gagal menghapus milestone. Coba lagi."); return; }
       updateMilestones(milestones.filter((m) => m.id !== id));
       toast.success("Milestone dihapus");
+    } catch {
+      toast.error("Gagal menghapus milestone. Coba lagi.");
     } finally {
       setDeletingId(null);
     }

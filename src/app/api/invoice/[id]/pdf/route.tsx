@@ -52,8 +52,7 @@ export async function GET(
         "Content-Length": buffer.length.toString(),
       },
     });
-  } catch (err) {
-    console.error("PDF generation error:", err);
+  } catch {
     return NextResponse.json({ error: "Gagal generate PDF" }, { status: 500 });
   }
 }

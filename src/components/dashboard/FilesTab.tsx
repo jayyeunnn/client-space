@@ -83,9 +83,12 @@ export function FilesTab({ projectId, initialFiles }: Props) {
   async function handleDelete(f: ProjectFile) {
     setDeletingId(f.id);
     try {
-      await fetch(`/api/files/${f.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/files/${f.id}`, { method: "DELETE" });
+      if (!res.ok) { toast.error("Gagal menghapus file. Coba lagi."); return; }
       setFiles((prev) => prev.filter((x) => x.id !== f.id));
       toast.success("File dihapus");
+    } catch {
+      toast.error("Gagal menghapus file. Coba lagi.");
     } finally {
       setDeletingId(null);
     }
