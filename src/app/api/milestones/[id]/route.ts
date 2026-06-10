@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { isValidUUID } from "@/lib/utils";
 
 async function ownsProject(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, milestoneId: string, userId: string) {
   const { data } = await supabase
@@ -17,6 +18,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    if (!isValidUUID(params.id)) return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -56,6 +58,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    if (!isValidUUID(params.id)) return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
