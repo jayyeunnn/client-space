@@ -34,3 +34,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# project planning files (per CLAUDE.md)
+CLAUDE.md
+preview.html
+.claude/
+PRODUCT.md
+PRD.md
+MASTER.md
+DESIGN.md
+design-system/
+.gstack/
+
+# logs
+dev-server.log
