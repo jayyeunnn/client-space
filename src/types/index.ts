@@ -20,6 +20,18 @@ export interface Project {
   portal_token: string;
   created_at: string;
   updated_at: string;
+  // Enriched fields (optional, computed server-side for dashboard)
+  milestone_count?: number;
+  done_count?: number;
+  file_count?: number;
+}
+
+export interface ActivityItem {
+  type: "milestone" | "file";
+  project_id: string;
+  project_title: string;
+  label: string;
+  date: string;
 }
 
 export interface Milestone {

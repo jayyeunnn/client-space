@@ -364,6 +364,23 @@ function MilestoneRow({
             {m.title}
           </span>
           <MilestoneBadge status={m.status} />
+          {m.due_date &&
+            (m.status === "pending" || m.status === "in_progress") &&
+            new Date(m.due_date) < new Date() && (
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  padding: "2px 7px",
+                  borderRadius: 99,
+                  background: "rgba(220,38,38,0.08)",
+                  color: "var(--cs-error)",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                OVERDUE
+              </span>
+            )}
         </div>
         {m.description && (
           <p
@@ -377,11 +394,16 @@ function MilestoneRow({
             {m.description}
           </p>
         )}
-        {m.due_date && (
-          <p style={{ fontSize: 11, color: "var(--cs-mu)", marginTop: 4 }}>
-            Tenggat: {new Date(m.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
-          </p>
-        )}
+        {m.due_date && (() => {
+          const isOverdue =
+            (m.status === "pending" || m.status === "in_progress") &&
+            new Date(m.due_date) < new Date();
+          return (
+            <p style={{ fontSize: 11, color: isOverdue ? "var(--cs-error)" : "var(--cs-mu)", marginTop: 4 }}>
+              Tenggat: {new Date(m.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+            </p>
+          );
+        })()}
       </div>
 
       {/* Delete — selalu visible di mobile, hover-only di desktop */}

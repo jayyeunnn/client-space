@@ -8,6 +8,8 @@ import {
   File,
   Download,
   FileText,
+  CalendarDays,
+  AlertCircle,
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import type { PortalData, MilestoneStatus } from "@/types";
@@ -62,6 +64,11 @@ function formatDate(str: string) {
   });
 }
 
+function isInvoiceOverdue(due_date: string | null) {
+  if (!due_date) return false;
+  return new Date(due_date) < new Date();
+}
+
 export function PortalView({ data }: Props) {
   const { project, milestones, files, invoice } = data;
   const [tab, setTab] = useState<Tab>("milestones");
@@ -82,11 +89,18 @@ export function PortalView({ data }: Props) {
       ? Math.round((doneCount / milestones.length) * 100)
       : 0;
 
-  const tabs: { id: Tab; label: string }[] = [
+  const mobileTabs: { id: Tab; label: string }[] = [
     { id: "milestones", label: `Milestones (${milestones.length})` },
     { id: "files", label: `Files (${files.length})` },
     { id: "invoice", label: "Invoice" },
   ];
+
+  const desktopTabs: { id: Tab; label: string }[] = [
+    { id: "milestones", label: `Milestones (${milestones.length})` },
+    { id: "files", label: `Files (${files.length})` },
+  ];
+
+  const overdue = isInvoiceOverdue(invoice?.due_date ?? null);
 
   async function downloadFile(fileId: string, fileName: string) {
     try {
@@ -111,6 +125,7 @@ export function PortalView({ data }: Props) {
       }}
     >
       <Toaster position="top-right" />
+
       {/* Top bar */}
       <header
         style={{
@@ -124,7 +139,7 @@ export function PortalView({ data }: Props) {
       >
         <div
           style={{
-            maxWidth: 760,
+            maxWidth: 1100,
             margin: "0 auto",
             height: 52,
             display: "flex",
@@ -167,157 +182,295 @@ export function PortalView({ data }: Props) {
         </div>
       </header>
 
-      <main style={{ maxWidth: 760, margin: "0 auto", padding: "24px 16px 64px" }} className="md:px-6 md:pt-8">
-        {/* Project header */}
-        <div className="mb-8">
-          <div className="flex flex-col gap-2 mb-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-            <div>
-              <h1
-                style={{
-                  fontSize: 22,
-                  fontWeight: 600,
-                  color: "var(--cs-ink)",
-                  letterSpacing: "-0.02em",
-                  lineHeight: 1.25,
-                  marginBottom: 4,
-                }}
-              >
-                {project.title}
-              </h1>
-              {project.description && (
-                <p
+      <main
+        style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 16px 64px" }}
+        className="md:px-8 md:pt-8"
+      >
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+          {/* ─── Left column ─── */}
+          <div className="flex-1 min-w-0 w-full">
+            {/* Project header */}
+            <div className="mb-7">
+              <div className="flex flex-col gap-2 mb-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <div>
+                  <h1
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 600,
+                      color: "var(--cs-ink)",
+                      letterSpacing: "-0.02em",
+                      lineHeight: 1.25,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {project.title}
+                  </h1>
+                  {project.description && (
+                    <p
+                      style={{
+                        fontSize: 13,
+                        color: "var(--cs-ink3)",
+                        lineHeight: 1.7,
+                        maxWidth: 520,
+                      }}
+                    >
+                      {project.description}
+                    </p>
+                  )}
+                </div>
+                <span
                   style={{
-                    fontSize: 13,
-                    color: "var(--cs-ink3)",
-                    lineHeight: 1.7,
-                    maxWidth: 520,
+                    flexShrink: 0,
+                    padding: "4px 10px",
+                    borderRadius: 99,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    background:
+                      project.status === "active"
+                        ? "#DCFCE7"
+                        : project.status === "completed"
+                        ? "#E5E7EB"
+                        : "#F5F5F4",
+                    color:
+                      project.status === "active"
+                        ? "#15803D"
+                        : project.status === "completed"
+                        ? "#374151"
+                        : "#78716C",
                   }}
                 >
-                  {project.description}
-                </p>
+                  {project.status === "active"
+                    ? "Aktif"
+                    : project.status === "completed"
+                    ? "Selesai"
+                    : "On Hold"}
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              {milestones.length > 0 && (
+                <div
+                  style={{
+                    background: "var(--cs-surface)",
+                    border: "1px solid var(--cs-bd)",
+                    borderRadius: 8,
+                    padding: "14px 16px",
+                    marginTop: 16,
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span style={{ fontSize: 12, color: "var(--cs-ink3)", fontWeight: 500 }}>
+                      Progress
+                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--cs-ink)" }}>
+                      {doneCount}/{milestones.length} milestone · {progressPct}%
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      height: 6,
+                      background: "var(--cs-s2)",
+                      borderRadius: 99,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${progressPct}%`,
+                        background: "var(--cs-ac)",
+                        borderRadius: 99,
+                        transition: "width 0.4s ease",
+                      }}
+                    />
+                  </div>
+                </div>
               )}
             </div>
-            <span
-              style={{
-                flexShrink: 0,
-                padding: "4px 10px",
-                borderRadius: 99,
-                fontSize: 11,
-                fontWeight: 500,
-                background:
-                  project.status === "active"
-                    ? "#DCFCE7"
-                    : project.status === "completed"
-                    ? "#E5E7EB"
-                    : "#F5F5F4",
-                color:
-                  project.status === "active"
-                    ? "#15803D"
-                    : project.status === "completed"
-                    ? "#374151"
-                    : "#78716C",
-              }}
+
+            {/* Desktop tabs: Milestones + Files only */}
+            <div
+              className="hidden md:flex"
+              style={{ borderBottom: "1px solid var(--cs-bd)", marginBottom: 24, gap: 0 }}
             >
-              {project.status === "active"
-                ? "Aktif"
-                : project.status === "completed"
-                ? "Selesai"
-                : "On Hold"}
-            </span>
+              {desktopTabs.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id === "milestones" || t.id === "files" ? t.id : "milestones")}
+                  style={{
+                    padding: "12px 16px",
+                    minHeight: 44,
+                    fontSize: 13,
+                    fontWeight: tab === t.id ? 600 : 400,
+                    color: tab === t.id ? "var(--cs-ink)" : "var(--cs-ink3)",
+                    background: "transparent",
+                    border: "none",
+                    borderBottom: tab === t.id ? "2px solid var(--cs-ink)" : "2px solid transparent",
+                    marginBottom: -1,
+                    cursor: "pointer",
+                    transition: "color 0.12s",
+                    letterSpacing: tab === t.id ? "-0.01em" : "normal",
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile tabs: all 3 */}
+            <div
+              className="flex md:hidden"
+              style={{ borderBottom: "1px solid var(--cs-bd)", marginBottom: 24, gap: 0 }}
+            >
+              {mobileTabs.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  style={{
+                    padding: "12px 14px",
+                    minHeight: 44,
+                    fontSize: 12,
+                    fontWeight: tab === t.id ? 600 : 400,
+                    color: tab === t.id ? "var(--cs-ink)" : "var(--cs-ink3)",
+                    background: "transparent",
+                    border: "none",
+                    borderBottom: tab === t.id ? "2px solid var(--cs-ink)" : "2px solid transparent",
+                    marginBottom: -1,
+                    cursor: "pointer",
+                    transition: "color 0.12s",
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab content */}
+            <div key={tab} className="cs-tab-enter">
+              {tab === "milestones" && <MilestonesSection milestones={milestones} />}
+              {tab === "files" && <FilesSection files={files} onDownload={downloadFile} />}
+              {tab === "invoice" && (
+                <div className="md:hidden">
+                  <InvoiceSection invoice={invoice} />
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Progress bar (hanya jika ada milestone) */}
-          {milestones.length > 0 && (
+          {/* ─── Right sidebar (desktop only) ─── */}
+          <div className="hidden md:flex flex-col gap-4 w-[270px] flex-shrink-0">
+            {/* Invoice summary card */}
             <div
               style={{
                 background: "var(--cs-surface)",
                 border: "1px solid var(--cs-bd)",
-                borderRadius: 8,
-                padding: "14px 16px",
-                marginTop: 16,
+                borderRadius: 10,
+                overflow: "hidden",
               }}
             >
-              <div className="flex items-center justify-between mb-2">
-                <span style={{ fontSize: 12, color: "var(--cs-ink3)", fontWeight: 500 }}>
-                  Progress
-                </span>
-                <span
-                  style={{ fontSize: 12, fontWeight: 600, color: "var(--cs-ink)" }}
-                >
-                  {doneCount}/{milestones.length} milestone · {progressPct}%
-                </span>
-              </div>
               <div
                 style={{
-                  height: 6,
-                  background: "var(--cs-s2)",
-                  borderRadius: 99,
-                  overflow: "hidden",
+                  padding: "12px 16px",
+                  borderBottom: "1px solid var(--cs-bd)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
                 }}
               >
-                <div
-                  style={{
-                    height: "100%",
-                    width: `${progressPct}%`,
-                    background: "var(--cs-ac)",
-                    borderRadius: 99,
-                    transition: "width 0.4s ease",
-                  }}
-                />
+                <FileText size={14} strokeWidth={1.5} style={{ color: "var(--cs-ink3)" }} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--cs-ink)" }}>
+                  Invoice
+                </span>
+              </div>
+
+              {invoice ? (
+                <div style={{ padding: "14px 16px" }} className="flex flex-col gap-3">
+                  <div>
+                    <p style={{ fontSize: 11, color: "var(--cs-mu)", marginBottom: 3 }}>Nomor</p>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: "var(--cs-ink)" }}>
+                      #{invoice.invoice_number}
+                    </p>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 11, color: "var(--cs-mu)", marginBottom: 3 }}>Total</p>
+                    <p style={{ fontSize: 18, fontWeight: 700, color: "var(--cs-ink)", letterSpacing: "-0.02em" }}>
+                      {formatRupiah(invoice.total)}
+                    </p>
+                  </div>
+                  {invoice.due_date && (
+                    <div
+                      style={{
+                        padding: "8px 10px",
+                        borderRadius: 7,
+                        background: overdue ? "rgba(220,38,38,0.06)" : "var(--cs-s2)",
+                        border: `1px solid ${overdue ? "rgba(220,38,38,0.15)" : "var(--cs-bd)"}`,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 7,
+                      }}
+                    >
+                      {overdue ? (
+                        <AlertCircle size={13} strokeWidth={1.5} style={{ color: "var(--cs-error)", flexShrink: 0 }} />
+                      ) : (
+                        <CalendarDays size={13} strokeWidth={1.5} style={{ color: "var(--cs-ink3)", flexShrink: 0 }} />
+                      )}
+                      <div>
+                        <p style={{ fontSize: 10, color: overdue ? "var(--cs-error)" : "var(--cs-ink3)", fontWeight: 500 }}>
+                          {overdue ? "Sudah jatuh tempo" : "Jatuh tempo"}
+                        </p>
+                        <p style={{ fontSize: 11, color: overdue ? "var(--cs-error)" : "var(--cs-ink)", fontWeight: 500 }}>
+                          {formatDate(invoice.due_date)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {invoice.tax_rate > 0 && (
+                    <p style={{ fontSize: 11, color: "var(--cs-mu)" }}>
+                      Sudah termasuk PPN {invoice.tax_rate}%
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div style={{ padding: "20px 16px", textAlign: "center" }}>
+                  <p style={{ fontSize: 12, color: "var(--cs-ink3)" }}>Invoice belum dibuat</p>
+                </div>
+              )}
+            </div>
+
+            {/* Project quick info */}
+            <div
+              style={{
+                background: "var(--cs-surface)",
+                border: "1px solid var(--cs-bd)",
+                borderRadius: 10,
+                padding: "14px 16px",
+              }}
+              className="flex flex-col gap-3"
+            >
+              <div>
+                <p style={{ fontSize: 10, color: "var(--cs-mu)", marginBottom: 3, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                  Dibuat oleh
+                </p>
+                <p style={{ fontSize: 13, fontWeight: 500, color: "var(--cs-ink)" }}>
+                  {freelancerName}
+                </p>
+              </div>
+              <div className="flex gap-4">
+                <div>
+                  <p style={{ fontSize: 10, color: "var(--cs-mu)", marginBottom: 3, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                    Files
+                  </p>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: "var(--cs-ink)" }}>{files.length}</p>
+                </div>
+                <div>
+                  <p style={{ fontSize: 10, color: "var(--cs-mu)", marginBottom: 3, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                    Milestone
+                  </p>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: "var(--cs-ink)" }}>{milestones.length}</p>
+                </div>
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Tabs */}
-        <div
-          style={{
-            borderBottom: "1px solid var(--cs-bd)",
-            marginBottom: 24,
-            display: "flex",
-            gap: 0,
-          }}
-        >
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              style={{
-                padding: "12px 16px",
-                minHeight: 44,
-                fontSize: 13,
-                fontWeight: tab === t.id ? 600 : 400,
-                color: tab === t.id ? "var(--cs-ink)" : "var(--cs-ink3)",
-                background: "transparent",
-                border: "none",
-                borderBottom: tab === t.id
-                  ? "2px solid var(--cs-ink)"
-                  : "2px solid transparent",
-                marginBottom: -1,
-                cursor: "pointer",
-                transition: "color 0.12s",
-                letterSpacing: tab === t.id ? "-0.01em" : "normal",
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab content — key triggers fade-in on tab change */}
-        <div key={tab} className="cs-tab-enter">
-          {tab === "milestones" && (
-            <MilestonesSection milestones={milestones} />
-          )}
-          {tab === "files" && (
-            <FilesSection
-              files={files}
-              onDownload={downloadFile}
-            />
-          )}
-          {tab === "invoice" && (
-            <InvoiceSection invoice={invoice} />
-          )}
+          </div>
         </div>
       </main>
     </div>

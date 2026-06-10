@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, LogOut, X } from "lucide-react";
+import { LayoutDashboard, Settings, LogOut, X } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { getInitials } from "@/lib/utils";
 
@@ -20,6 +20,14 @@ const navItems = [
   },
 ];
 
+const bottomNavItems = [
+  {
+    href: "/dashboard/settings",
+    label: "Pengaturan",
+    icon: Settings,
+  },
+];
+
 export function Sidebar({ businessName, fullName, onClose }: SidebarProps) {
   const pathname = usePathname();
 
@@ -27,6 +35,17 @@ export function Sidebar({ businessName, fullName, onClose }: SidebarProps) {
     const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = "/login";
+  }
+
+  function isNavActive(href: string) {
+    if (href === "/dashboard") {
+      return (
+        pathname === "/dashboard" ||
+        (pathname.startsWith("/dashboard/") &&
+          !pathname.startsWith("/dashboard/settings"))
+      );
+    }
+    return pathname.startsWith(href);
   }
 
   return (
@@ -82,10 +101,53 @@ export function Sidebar({ businessName, fullName, onClose }: SidebarProps) {
       <nav className="flex-1 px-1 pt-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive =
-            item.href === "/dashboard"
-              ? pathname === "/dashboard" || pathname.startsWith("/dashboard/")
-              : pathname.startsWith(item.href);
+          const isActive = isNavActive(item.href);
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onClose}
+              className="flex items-center gap-2 px-[10px] mx-1 my-[1px] rounded-[5px] transition-colors duration-[120ms]"
+              style={{
+                fontSize: 12,
+                minHeight: 44,
+                color: isActive ? "#fff" : "rgba(255,255,255,0.5)",
+                background: isActive
+                  ? "rgba(255,255,255,0.12)"
+                  : "transparent",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.07)";
+                  e.currentTarget.style.color = "rgba(255,255,255,0.85)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+                }
+              }}
+            >
+              <Icon size={14} strokeWidth={1.5} />
+              {item.label}
+            </Link>
+          );
+        })}
+
+        {/* Divider */}
+        <div
+          style={{
+            margin: "8px 10px",
+            borderTop: "1px solid rgba(255,255,255,0.07)",
+          }}
+        />
+
+        {/* Bottom nav items (Settings) */}
+        {bottomNavItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = isNavActive(item.href);
 
           return (
             <Link

@@ -3,18 +3,20 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { Plus, FolderOpen, ExternalLink, Copy, CheckCheck } from "lucide-react";
+import { Plus, FolderOpen, ExternalLink, Copy, CheckCheck, FileUp, CheckCircle2 } from "lucide-react";
 import { ProjectBadge } from "@/components/ui/Badge";
 import { NewProjectModal } from "@/components/dashboard/NewProjectModal";
 import { formatDateShort } from "@/lib/utils";
-import type { Project } from "@/types";
+import type { Project, ActivityItem } from "@/types";
 
 interface DashboardClientProps {
   initialProjects: Project[];
   firstName: string;
+  overdueCount: number;
+  recentActivity: ActivityItem[];
 }
 
-export function DashboardClient({ initialProjects, firstName }: DashboardClientProps) {
+export function DashboardClient({ initialProjects, firstName, overdueCount, recentActivity }: DashboardClientProps) {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [showModal, setShowModal] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export function DashboardClient({ initialProjects, firstName }: DashboardClientP
   const stats = {
     total: projects.length,
     active: projects.filter((p) => p.status === "active").length,
-    completed: projects.filter((p) => p.status === "completed").length,
+    overdue: overdueCount,
     clients: new Set(projects.map((p) => p.client_name)).size,
   };
 
@@ -113,26 +115,58 @@ export function DashboardClient({ initialProjects, firstName }: DashboardClientP
       {/* Stats row */}
       <div ref={statsRef} className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         {[
-          { label: "Total Project", value: stats.total, accent: false },
-          { label: "Aktif", value: stats.active, accent: true },
-          { label: "Selesai", value: stats.completed, accent: false },
-          { label: "Total Klien", value: stats.clients, accent: false },
+          { label: "Total Project", value: stats.total, variant: "default" as const },
+          { label: "Aktif", value: stats.active, variant: "accent" as const },
+          { label: "Overdue", value: stats.overdue, variant: stats.overdue > 0 ? "warn" : "default" as "warn" | "default" },
+          { label: "Total Klien", value: stats.clients, variant: "default" as const },
         ].map((stat) => (
           <div
             key={stat.label}
             style={{
-              background: stat.accent ? "var(--cs-acl)" : "var(--cs-surface)",
-              border: `1px solid ${stat.accent ? "var(--cs-acm)" : "var(--cs-bd)"}`,
+              background:
+                stat.variant === "accent"
+                  ? "var(--cs-acl)"
+                  : stat.variant === "warn" && stat.value > 0
+                  ? "rgba(220,38,38,0.05)"
+                  : "var(--cs-surface)",
+              border: `1px solid ${
+                stat.variant === "accent"
+                  ? "var(--cs-acm)"
+                  : stat.variant === "warn" && stat.value > 0
+                  ? "rgba(220,38,38,0.18)"
+                  : "var(--cs-bd)"
+              }`,
               borderRadius: 8,
               padding: "11px 14px",
             }}
           >
-            <p style={{ fontSize: 11, color: stat.accent ? "var(--cs-ac)" : "var(--cs-ink3)", fontWeight: 500, marginBottom: 4 }}>
+            <p
+              style={{
+                fontSize: 11,
+                color:
+                  stat.variant === "accent"
+                    ? "var(--cs-ac)"
+                    : stat.variant === "warn" && stat.value > 0
+                    ? "var(--cs-error)"
+                    : "var(--cs-ink3)",
+                fontWeight: 500,
+                marginBottom: 4,
+              }}
+            >
               {stat.label}
             </p>
             <p
               className="font-semibold"
-              style={{ fontSize: 22, color: stat.accent ? "var(--cs-ac)" : "var(--cs-ink)", letterSpacing: "-0.02em" }}
+              style={{
+                fontSize: 22,
+                color:
+                  stat.variant === "accent"
+                    ? "var(--cs-ac)"
+                    : stat.variant === "warn" && stat.value > 0
+                    ? "var(--cs-error)"
+                    : "var(--cs-ink)",
+                letterSpacing: "-0.02em",
+              }}
             >
               {stat.value}
             </p>
@@ -195,6 +229,103 @@ export function DashboardClient({ initialProjects, firstName }: DashboardClientP
         </>
       )}
 
+      {/* Recent Activity */}
+      {recentActivity.length > 0 && (
+        <div className="mt-8">
+          <h2
+            className="font-semibold mb-3"
+            style={{ fontSize: 14, color: "var(--cs-ink)", letterSpacing: "-0.01em" }}
+          >
+            Aktivitas Terbaru
+          </h2>
+          <div
+            style={{
+              background: "var(--cs-surface)",
+              border: "1px solid var(--cs-bd)",
+              borderRadius: 8,
+              overflow: "hidden",
+            }}
+          >
+            {recentActivity.map((item, i) => (
+              <Link
+                key={`${item.type}-${i}`}
+                href={`/dashboard/projects/${item.project_id}`}
+                style={{ textDecoration: "none" }}
+              >
+                <div
+                  className="flex items-center gap-3 group"
+                  style={{
+                    padding: "11px 14px",
+                    borderBottom:
+                      i < recentActivity.length - 1
+                        ? "1px solid var(--cs-bd)"
+                        : "none",
+                    transition: "background 0.12s",
+                  }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLDivElement).style.background =
+                      "var(--cs-s2)")
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLDivElement).style.background =
+                      "transparent")
+                  }
+                >
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 6,
+                      background:
+                        item.type === "milestone"
+                          ? "var(--cs-acl)"
+                          : "var(--cs-s2)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.type === "milestone" ? (
+                      <CheckCircle2
+                        size={13}
+                        strokeWidth={1.5}
+                        style={{ color: "var(--cs-ac)" }}
+                      />
+                    ) : (
+                      <FileUp
+                        size={13}
+                        strokeWidth={1.5}
+                        style={{ color: "var(--cs-ink3)" }}
+                      />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="font-medium truncate"
+                      style={{ fontSize: 12, color: "var(--cs-ink)" }}
+                    >
+                      {item.label}
+                    </p>
+                    <p
+                      style={{ fontSize: 11, color: "var(--cs-mu)", marginTop: 1 }}
+                    >
+                      {item.project_title} ·{" "}
+                      {item.type === "milestone"
+                        ? "Milestone ditambahkan"
+                        : "File diupload"}
+                    </p>
+                  </div>
+                  <span style={{ fontSize: 11, color: "var(--cs-mu)", flexShrink: 0 }}>
+                    {formatDateShort(item.date)}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {showModal && (
         <NewProjectModal
           onClose={() => setShowModal(false)}
@@ -254,12 +385,78 @@ function ProjectCard({
       </div>
 
       {/* Client */}
-      <p style={{ fontSize: 12, color: "var(--cs-ink3)", marginBottom: 12 }}>
+      <p style={{ fontSize: 12, color: "var(--cs-ink3)", marginBottom: 10 }}>
         {project.client_name}
         {project.client_email && (
           <span style={{ color: "var(--cs-mu)" }}> · {project.client_email}</span>
         )}
       </p>
+
+      {/* Progress bar (if milestones exist) */}
+      {project.milestone_count !== undefined && project.milestone_count > 0 && (
+        <div style={{ marginBottom: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 5,
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  fontSize: 10,
+                  color: "var(--cs-ink3)",
+                  fontWeight: 500,
+                }}
+              >
+                {project.done_count}/{project.milestone_count} milestone
+              </span>
+              {project.file_count !== undefined && project.file_count > 0 && (
+                <span
+                  style={{
+                    fontSize: 10,
+                    color: "var(--cs-mu)",
+                    padding: "1px 6px",
+                    borderRadius: 99,
+                    background: "var(--cs-s2)",
+                  }}
+                >
+                  {project.file_count} file
+                </span>
+              )}
+            </div>
+            <span style={{ fontSize: 10, fontWeight: 600, color: "var(--cs-ink3)" }}>
+              {project.milestone_count > 0
+                ? Math.round(((project.done_count ?? 0) / project.milestone_count) * 100)
+                : 0}%
+            </span>
+          </div>
+          <div
+            style={{
+              height: 4,
+              background: "var(--cs-s2)",
+              borderRadius: 99,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                height: "100%",
+                width: `${
+                  project.milestone_count > 0
+                    ? Math.round(((project.done_count ?? 0) / project.milestone_count) * 100)
+                    : 0
+                }%`,
+                background: "var(--cs-ac)",
+                borderRadius: 99,
+                transition: "width 0.4s ease",
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Description */}
       {project.description && (
@@ -268,7 +465,7 @@ function ProjectCard({
             fontSize: 12,
             color: "var(--cs-ink3)",
             lineHeight: 1.6,
-            marginBottom: 12,
+            marginBottom: 10,
             display: "-webkit-box",
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
