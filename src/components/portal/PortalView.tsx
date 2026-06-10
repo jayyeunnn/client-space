@@ -9,6 +9,7 @@ import {
   Download,
   FileText,
 } from "lucide-react";
+import { Toaster, toast } from "sonner";
 import type { PortalData, MilestoneStatus } from "@/types";
 
 interface Props {
@@ -97,7 +98,7 @@ export function PortalView({ data }: Props) {
       a.target = "_blank";
       a.click();
     } catch {
-      // silent fail
+      toast.error("Gagal mengunduh file. Coba lagi.");
     }
   }
 
@@ -109,6 +110,7 @@ export function PortalView({ data }: Props) {
         fontFamily: "var(--font-ui)",
       }}
     >
+      <Toaster position="top-right" />
       {/* Top bar */}
       <header
         style={{
