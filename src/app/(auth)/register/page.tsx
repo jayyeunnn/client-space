@@ -110,7 +110,7 @@ export default function RegisterPage() {
 
         {/* Tagline */}
         <div>
-          <h1
+          <p
             className="text-white"
             style={{
               fontFamily: "var(--font-display)",
@@ -125,7 +125,7 @@ export default function RegisterPage() {
             <span style={{ color: "rgba(255,255,255,0.6)" }}>
               dari hari pertama.
             </span>
-          </h1>
+          </p>
           <p
             className="mt-4"
             style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.7 }}
@@ -196,7 +196,7 @@ export default function RegisterPage() {
             </span>
           </div>
 
-          <h2
+          <h1
             style={{
               fontFamily: "var(--font-display)",
               fontSize: 30,
@@ -208,7 +208,7 @@ export default function RegisterPage() {
             }}
           >
             Buat akun gratis
-          </h2>
+          </h1>
           <p style={{ fontSize: 14, color: "var(--cs-ink3)", marginBottom: 32 }}>
             Mulai kelola project dan klien dengan lebih profesional.
           </p>

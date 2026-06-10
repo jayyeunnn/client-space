@@ -72,7 +72,7 @@ function LoginForm() {
 
         {/* Tagline */}
         <div>
-          <h1
+          <p
             className="text-white font-display"
             style={{
               fontFamily: "var(--font-display)",
@@ -87,7 +87,7 @@ function LoginForm() {
             <span style={{ color: "rgba(255,255,255,0.5)" }}>
               yang perlu klien tahu.
             </span>
-          </h1>
+          </p>
           <p
             className="mt-4"
             style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", lineHeight: 1.7 }}
@@ -131,7 +131,7 @@ function LoginForm() {
             </span>
           </div>
 
-          <h2
+          <h1
             className="font-display"
             style={{
               fontFamily: "var(--font-display)",
@@ -144,7 +144,7 @@ function LoginForm() {
             }}
           >
             Selamat datang kembali
-          </h2>
+          </h1>
           <p style={{ fontSize: 14, color: "var(--cs-ink3)", marginBottom: 32 }}>
             Masuk ke akun ClientSpace kamu.
           </p>

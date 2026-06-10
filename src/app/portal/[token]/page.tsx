@@ -18,9 +18,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!project) return { title: "Portal Tidak Ditemukan" };
 
+  const title = `${project.title} — ClientSpace`;
+  const description = `Lihat progress, milestone, dan invoice untuk project "${project.title}".`;
+
   return {
-    title: `${project.title} — ClientSpace`,
-    description: `Portal project untuk ${project.client_name}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+    },
   };
 }
 
