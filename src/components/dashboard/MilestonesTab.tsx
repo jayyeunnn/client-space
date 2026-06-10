@@ -139,7 +139,7 @@ export function MilestonesTab({ projectId, initialMilestones, onMilestonesChange
   ).length;
 
   return (
-    <div className="max-w-[720px]">
+    <div>
       {/* Header row */}
       <div className="flex items-center justify-between mb-5">
         <div>

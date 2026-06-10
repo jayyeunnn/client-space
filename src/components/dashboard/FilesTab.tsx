@@ -106,7 +106,7 @@ export function FilesTab({ projectId, initialFiles }: Props) {
   }
 
   return (
-    <div className="max-w-[720px]">
+    <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <h2
